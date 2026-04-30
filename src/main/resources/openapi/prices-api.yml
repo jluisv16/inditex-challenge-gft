@@ -1,0 +1,116 @@
+openapi: 3.0.3
+info:
+  title: Inditex Prices API
+  description: Service to query the applicable price for a product and brand at a given date and time
+  version: 1.0.0
+
+tags:
+  - name: Prices
+    description: Price lookup operations
+
+paths:
+  /api/v1/prices:
+    get:
+      tags:
+        - Prices
+      summary: Get applicable price
+      description: Returns the price with highest priority applicable for a product and brand at a given date and time
+      operationId: getPrice
+      parameters:
+        - name: applicationDate
+          in: query
+          description: Date and time of price application (ISO 8601)
+          required: true
+          schema:
+            type: string
+            format: date-time
+            example: "2020-06-14T10:00:00"
+        - name: productId
+          in: query
+          description: Product identifier
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 35455
+        - name: brandId
+          in: query
+          description: Brand identifier
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      responses:
+        "200":
+          description: Applicable price found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceResponse"
+        "400":
+          description: Invalid or missing request parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: No applicable price found for the given parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
+components:
+  schemas:
+    PriceResponse:
+      type: object
+      required:
+        - productId
+        - brandId
+        - priceList
+        - startDate
+        - endDate
+        - price
+        - currency
+      properties:
+        productId:
+          type: integer
+          format: int64
+          description: Product identifier
+          example: 35455
+        brandId:
+          type: integer
+          format: int64
+          description: Brand identifier
+          example: 1
+        priceList:
+          type: integer
+          description: Price list identifier
+          example: 1
+        startDate:
+          type: string
+          format: date-time
+          description: Start date of the applicable price
+        endDate:
+          type: string
+          format: date-time
+          description: End date of the applicable price
+        price:
+          type: number
+          description: Final sale price
+          example: 35.50
+        currency:
+          type: string
+          description: Currency ISO code
+          example: EUR
+
+    ProblemDetail:
+      type: object
+      properties:
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
