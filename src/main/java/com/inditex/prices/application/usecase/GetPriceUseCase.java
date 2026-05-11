@@ -24,7 +24,7 @@ public class GetPriceUseCase implements GetPriceQuery {
     @Override
     @Cacheable(
             value = "prices",
-            key = "#applicationDate.toString() + '_' + #productId + '_' + #brandId"
+            key = "#applicationDate.toEpochMilli() + '_' + #productId + '_' + #brandId"
     )
     @Retry(name = "priceService")
     @CircuitBreaker(name = "priceService", fallbackMethod = "getPriceFallback")

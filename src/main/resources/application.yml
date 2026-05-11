@@ -27,8 +27,14 @@ spring:
   h2:
     console:
       enabled: false
+
   profiles:
     active: local
+
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=300s
 
 springdoc:
   swagger-ui:
@@ -36,11 +42,20 @@ springdoc:
   api-docs:
     path: /api-docs
 
-# Configuración de resiliencia
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
 resilience4j:
   circuitbreaker:
     instances:
       priceService:
+        enabled: true
         registerHealthIndicator: true
         slidingWindowSize: 10
         minimumNumberOfCalls: 5
@@ -69,15 +84,8 @@ resilience4j:
         maxConcurrentCalls: 10
         maxWaitDuration: 500ms
 
-# Configuración de cache
-spring.cache:
-  type: caffeine
-  caffeine:
-    spec: maximumSize=1000,expireAfterWrite=300s
-
 logging:
   level:
     com.inditex.prices: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-
+    org.hibernate.SQL: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: INFO

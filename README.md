@@ -1,6 +1,6 @@
 # Inditex Prices Service
 
-**Challenge Técnico — GFT · Inditex**
+**Challenge Técnico — Inditex**
 
 Servicio REST desarrollado con arquitectura hexagonal y enfoque API First para consultar el precio aplicable de un producto en una cadena (brand) para una fecha determinada.
 
@@ -29,7 +29,7 @@ La base de datos de comercio electrónico de la compañía contiene la tabla `PR
 - **PRICE**: Precio final de venta
 - **CURR**: ISO de la moneda
 
-### Requisitos
+### Requisitos del test
 
 Construir una aplicación/servicio en Spring Boot que provea un endpoint REST de consulta tal que:
 
@@ -42,6 +42,22 @@ Construir una aplicación/servicio en Spring Boot que provea un endpoint REST de
   - Test 3: petición a las 21:00 del día 14 del producto 35455 para la brand 1 (ZARA)
   - Test 4: petición a las 10:00 del día 15 del producto 35455 para la brand 1 (ZARA)
   - Test 5: petición a las 21:00 del día 16 del producto 35455 para la brand 1 (ZARA)
+
+---
+
+## 🎯 Requisitos funcionales
+
+El servicio debe:
+
+- Recibir:
+  - `applicationDate`
+  - `productId`
+  - `brandId`
+- Retornar:
+  - `productId`, `brandId`, `priceList`, `startDate`, `endDate`, `price`
+- Usar H2 en memoria
+- Resolver prioridad por solapamiento de fechas
+- Retornar 404 si no existe precio aplicable
 
 ---
 
@@ -129,20 +145,100 @@ Una **Entidad DDD** (con una clase, métodos de ciclo de vida y enforcement de i
 
 ## Stack Tecnológico
 
-| Tecnología                        | Versión | Propósito                           |
-|-----------------------------------|---------|-------------------------------------|
-| Java                              | 21 (LTS)| Lenguaje                            |
-| Spring Boot                       | 3.4.0   | Framework de aplicación             |
-| Spring Data JPA                   | 3.4.0   | Abstracción de persistencia         |
-| H2 Database                       | 2.x     | Base de datos en memoria            |
-| openapi-generator-maven-plugin    | 7.10.0  | Generación de código API First      |
-| MapStruct                         | 1.6.3   | Mappers compile-time safe           |
-| Lombok                            | 1.18.36 | Reducción de boilerplate            |
-| JUnit 5 + MockMvc                 | 3.4.0   | Testing de integración y unitario   |
-| Docker                            | Cualquiera | Contenerización                  |
-| Maven                             | 3.8+    | Herramienta de build                |
+| Tecnología                        | Versión    | Propósito                         |
+|-----------------------------------|------------|-----------------------------------|
+| Java                              | 21 (LTS)   | Lenguaje                          |
+| Spring Boot                       | 3.4.0      | Framework de aplicación           |
+| Spring Data JPA                   | 3.4.0      | Abstracción de persistencia       |
+| H2 Database                       | 2.2.x      | Base de datos en memoria          |
+| openapi-generator-maven-plugin    | 7.10.0     | Generación de código API First    |
+| MapStruct                         | 1.6.3      | Mappers compile-time safe         |
+| Lombok                            | 1.18.36    | Reducción de boilerplate          |
+| JUnit 5 + MockMvc                 | 3.4.0      | Testing de integración y unitario |
+| Docker                            | Cualquiera | Contenerización                   |
+| Maven                             | 3.8+       | Herramienta de build              |
+| Resilience4j                      | 2.2.0      | Resiliencia                       |
+| Caffeine                          | 3.1.8      | Cache                             |
+| OpenAPI Generator                 | 7.10.0     | API First                         |
 
 ---
+
+## ⚡ Resiliencia implementada (únicas mejoras añadidas)
+
+Este proyecto **solo ha incorporado mejoras de resiliencia**, sin cambios en el core del dominio:
+
+- ✅ Cache (Caffeine)
+- ✅ Retry (Resilience4j)
+- ✅ Circuit Breaker
+- ✅ TimeLimiter
+
+📄 `GetPriceUseCase.java`
+```java
+@Cacheable
+@Retry
+@CircuitBreaker
+@TimeLimiter
+```
+
+---
+
+## 🧪 Cómo ejecutar los tests añadidos
+
+Para validar las mejoras implementadas:
+
+```bash
+mvn clean test
+```
+
+Esto ejecuta:
+
+- Tests unitarios del UseCase
+- Tests de integración REST
+- Tests de cache
+- Tests de resiliencia (retry + circuit breaker + timeout)
+
+✔️ Todos los tests deben pasar en entorno H2 en memoria.
+
+---
+
+## 🚀 Ejecución del proyecto
+
+```bash
+mvn spring-boot:run
+```
+
+---
+
+## 🌐 Endpoint
+
+```http
+GET /api/v1/prices
+```
+
+Ejemplo:
+
+```bash
+curl "http://localhost:8080/api/v1/prices?applicationDate=2020-06-14T10:00:00Z&productId=35455&brandId=1"
+```
+
+---
+
+## 📦 Respuesta
+
+```json
+{
+  "productId": 35455,
+  "brandId": 1,
+  "priceList": 1,
+  "startDate": "2020-06-14T00:00:00Z",
+  "endDate": "2020-12-31T23:59:59Z",
+  "price": 35.50,
+  "currency": "EUR"
+}
+```
+
+---
+
 
 ## Cómo Ejecutar y Probar el Proyecto
 
@@ -242,14 +338,25 @@ curl "http://localhost:8080/api/v1/prices?applicationDate=2020-06-14T10:00:00&pr
 
 ## Decisiones de Diseño Clave
 
-1. **Desambiguación por prioridad**: resuelta a nivel de naming de jpa — sin lógica extra en la capa de servicio
+1. Resolución de precio por prioridad delegada a la query JPA (filtrado por fechas, producto, brand y orden por `priority DESC)`, evitando lógica en la capa de servicio.
 
-2. **`ProblemDetail` (RFC 7807)**: formato de error estándar de Spring 6, no se necesitan clases de error personalizadas
+2. Uso de `ProblemDetail (RFC 7807)` para estandarizar respuestas de error HTTP sin creación de DTOs personalizados.
 
-3. **MapStruct**: mappers compile-time safe entre capas. Si un campo cambia, el compilador lo detecta
+3. Uso de `MapStruct` para mapeo entre capas (Entity ↔ Domain ↔ DTO) con generación en tiempo de compilación y validación estática.
 
-4. **`@Transactional(readOnly = true)`**: aplicado en todas las operaciones de lectura en el adaptador de persistencia
+4. Uso de `@Transactional(readOnly = true)` en operaciones de lectura para optimizar rendimiento y evitar flush innecesario en Hibernate.
 
+5. Implementación de caching con Spring Cache + Caffeine para reducir llamadas repetidas a base de datos y mejorar latencia.
+
+6. Implementación de resiliencia con Resilience4j (Retry, Circuit Breaker, Bulkhead, TimeLimiter) para tolerancia a fallos y control de carga
+
+7. Configuración de Circuit Breaker para evitar saturación del sistema ante fallos persistentes de dependencias.
+
+8. Aplicación de arquitectura hexagonal para desacoplar dominio de frameworks (Spring, JPA, HTTP).
+
+9. Separación estricta de responsabilidades entre dominio, aplicación e infraestructura.
+
+10. Delegación de persistencia a adaptadores (Ports & Adapters) para mantener independencia del core de negocio.
 ---
 
-**Inditex Prices Service · GFT Technical Challenge**
+**Inditex Prices Service · Challenge**

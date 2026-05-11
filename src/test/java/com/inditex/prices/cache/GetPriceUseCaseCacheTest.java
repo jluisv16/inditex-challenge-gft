@@ -13,6 +13,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,7 +25,7 @@ class GetPriceUseCaseCacheTest {
     @Autowired
     private GetPriceUseCase useCase;
 
-    @MockitoBean
+    @Autowired
     private PriceRepository priceRepository;
 
     @Autowired
@@ -36,6 +37,22 @@ class GetPriceUseCaseCacheTest {
     void setUp() {
         var cache = cacheManager.getCache("prices");
         if (cache != null) cache.clear();
+    }
+
+    @Test
+    void cache_should_work_correctly() {
+
+        Price price = buildPrice();
+
+        when(priceRepository.findApplicablePrice(any(), anyLong(), anyLong()))
+                .thenReturn(Optional.of(price));
+
+        useCase.getApplicablePrice(DATE, 35455L, 1L);
+        useCase.getApplicablePrice(DATE, 35455L, 1L);
+        useCase.getApplicablePrice(DATE, 35455L, 1L);
+
+        verify(priceRepository, times(1))
+                .findApplicablePrice(any(), anyLong(), anyLong());
     }
 
     @Test
