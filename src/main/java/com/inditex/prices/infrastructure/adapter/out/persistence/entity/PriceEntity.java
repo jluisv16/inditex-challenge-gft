@@ -1,13 +1,12 @@
 package com.inditex.prices.infrastructure.adapter.out.persistence.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "PRICES")
@@ -24,10 +23,10 @@ public class PriceEntity {
     private Long brandId;
 
     @Column(name = "START_DATE", nullable = false)
-    private LocalDateTime startDate;
+    private Instant startDate;
 
     @Column(name = "END_DATE", nullable = false)
-    private LocalDateTime endDate;
+    private Instant endDate;
 
     @Column(name = "PRICE_LIST", nullable = false)
     private Integer priceList;

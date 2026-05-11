@@ -1,19 +1,83 @@
 spring:
+  application:
+    name: prices-service
+
   datasource:
-    url: jdbc:h2:file:/Users/jornat/testdb;AUTO_SERVER=TRUE
+    url: jdbc:h2:mem:pricesdb
     driver-class-name: org.h2.Driver
     username: sa
     password: password
+
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
     defer-datasource-initialization: true
-    show-sql: true
+    show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Europe/Madrid
+        format_sql: true
+
   sql:
     init:
       mode: always
 
+  h2:
+    console:
+      enabled: false
+  profiles:
+    active: local
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+  api-docs:
+    path: /api-docs
+
+# Configuración de resiliencia
+resilience4j:
+  circuitbreaker:
+    instances:
+      priceService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+
+  timelimiter:
+    instances:
+      priceService:
+        timeoutDuration: 3s
+
+  retry:
+    instances:
+      priceService:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+
+  bulkhead:
+    instances:
+      priceService:
+        maxConcurrentCalls: 10
+        maxWaitDuration: 500ms
+
+# Configuración de cache
+spring.cache:
+  type: caffeine
+  caffeine:
+    spec: maximumSize=1000,expireAfterWrite=300s
+
+logging:
+  level:
+    com.inditex.prices: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+

@@ -1,13 +1,14 @@
 package com.inditex.prices.infrastructure.adapter.out.persistence.repository;
 
-
 import com.inditex.prices.infrastructure.adapter.out.persistence.entity.PriceEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,8 +25,8 @@ class JpaPriceRepositoryTest {
     private PriceEntity buildEntity(
             Integer priceList,
             int priority,
-            LocalDateTime start,
-            LocalDateTime end,
+            Instant start,
+            Instant end,
             BigDecimal price
     ) {
         PriceEntity entity = new PriceEntity();
@@ -44,21 +45,23 @@ class JpaPriceRepositoryTest {
     void shouldReturnPriceWithHighestPriority() {
 
         // given
-        LocalDateTime queryDate = LocalDateTime.of(2020, 6, 14, 10, 0);
+        Instant queryDate = OffsetDateTime.of(
+                2020, 6, 14, 10, 0, 0, 0, ZoneOffset.UTC
+        ).toInstant();
 
         repository.save(buildEntity(
                 1,
                 0,
-                LocalDateTime.of(2020, 6, 14, 0, 0),
-                LocalDateTime.of(2020, 12, 31, 23, 59),
+                OffsetDateTime.of(2020, 6, 14, 0, 0, 0, 0, ZoneOffset.UTC).toInstant(),
+                OffsetDateTime.of(2020, 12, 31, 23, 59, 0, 0, ZoneOffset.UTC).toInstant(),
                 new BigDecimal("35.50")
         ));
 
         repository.save(buildEntity(
                 2,
                 1,
-                LocalDateTime.of(2020, 6, 14, 9, 0),
-                LocalDateTime.of(2020, 6, 14, 18, 0),
+                OffsetDateTime.of(2020, 6, 14, 9, 0, 0, 0, ZoneOffset.UTC).toInstant(),
+                OffsetDateTime.of(2020, 6, 14, 18, 0, 0, 0, ZoneOffset.UTC).toInstant(),
                 new BigDecimal("25.45")
         ));
 
@@ -81,7 +84,7 @@ class JpaPriceRepositoryTest {
     void shouldReturnEmptyWhenNoPriceExists() {
 
         // given
-        LocalDateTime queryDate = LocalDateTime.of(1999, 1, 1, 0, 0);
+        Instant queryDate = Instant.parse("1999-01-01T00:00:00Z");
 
         // when
         Optional<PriceEntity> result =
@@ -95,5 +98,4 @@ class JpaPriceRepositoryTest {
         // then
         assertThat(result).isEmpty();
     }
-
 }

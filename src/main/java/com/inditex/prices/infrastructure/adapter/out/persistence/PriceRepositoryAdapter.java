@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 @Component
@@ -21,7 +23,7 @@ public class PriceRepositoryAdapter implements PriceRepository {
     @Override
     @Transactional(readOnly = true)
     public Optional<Price> findApplicablePrice(
-            LocalDateTime applicationDate,
+            Instant applicationDate,
             Long productId,
             Long brandId
     ) {

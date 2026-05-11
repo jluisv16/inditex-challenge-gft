@@ -23,10 +23,10 @@ class PriceControllerIntegrationTest {
     private MockMvc mockMvc;
 
     @Test
-    @DisplayName("Test 1 - 14 Jun 10:00 → price list 1, price 35.50")
+    @DisplayName("Test 1 - 14 Jun 10:00 Madrid → price list 1, price 35.50")
     void test1_june14At10h_shouldReturnPriceList1() throws Exception {
         mockMvc.perform(get(URL)
-                        .param("applicationDate", "2020-06-14T10:00:00Z")
+                        .param("applicationDate", "2020-06-14T10:00:00+02:00")
                         .param("productId", String.valueOf(PRODUCT_ID))
                         .param("brandId", String.valueOf(BRAND_ID))
                         .accept(MediaType.APPLICATION_JSON))
@@ -39,10 +39,10 @@ class PriceControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Test 2 - 14 Jun 16:00 → price list 2, price 25.45 (higher priority overlap)")
+    @DisplayName("Test 2 - 14 Jun 16:00 Madrid → price list 2, price 25.45")
     void test2_june14At16h_shouldReturnPriceList2() throws Exception {
         mockMvc.perform(get(URL)
-                        .param("applicationDate", "2020-06-14T16:00:00Z")
+                        .param("applicationDate", "2020-06-14T16:00:00+02:00")
                         .param("productId", String.valueOf(PRODUCT_ID))
                         .param("brandId", String.valueOf(BRAND_ID))
                         .accept(MediaType.APPLICATION_JSON))
@@ -52,10 +52,10 @@ class PriceControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Test 3 - 14 Jun 21:00 → price list 1, price 35.50")
+    @DisplayName("Test 3 - 14 Jun 21:00 Madrid → price list 1, price 35.50")
     void test3_june14At21h_shouldReturnPriceList1() throws Exception {
         mockMvc.perform(get(URL)
-                        .param("applicationDate", "2020-06-14T21:00:00Z")
+                        .param("applicationDate", "2020-06-14T21:00:00+02:00")
                         .param("productId", String.valueOf(PRODUCT_ID))
                         .param("brandId", String.valueOf(BRAND_ID))
                         .accept(MediaType.APPLICATION_JSON))
@@ -65,10 +65,10 @@ class PriceControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Test 4 - 15 Jun 10:00 → price list 3, price 30.50")
+    @DisplayName("Test 4 - 15 Jun 10:00 Madrid → price list 3, price 30.50")
     void test4_june15At10h_shouldReturnPriceList3() throws Exception {
         mockMvc.perform(get(URL)
-                        .param("applicationDate", "2020-06-15T10:00:00Z")
+                        .param("applicationDate", "2020-06-15T10:00:00+02:00")
                         .param("productId", String.valueOf(PRODUCT_ID))
                         .param("brandId", String.valueOf(BRAND_ID))
                         .accept(MediaType.APPLICATION_JSON))
@@ -78,10 +78,10 @@ class PriceControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Test 5 - 16 Jun 21:00 → price list 4, price 38.95")
+    @DisplayName("Test 5 - 16 Jun 21:00 Madrid → price list 4, price 38.95")
     void test5_june16At21h_shouldReturnPriceList4() throws Exception {
         mockMvc.perform(get(URL)
-                        .param("applicationDate", "2020-06-16T21:00:00Z")
+                        .param("applicationDate", "2020-06-16T21:00:00+02:00")
                         .param("productId", String.valueOf(PRODUCT_ID))
                         .param("brandId", String.valueOf(BRAND_ID))
                         .accept(MediaType.APPLICATION_JSON))
@@ -94,7 +94,7 @@ class PriceControllerIntegrationTest {
     @DisplayName("404 - No price found for a date outside all ranges")
     void whenNoPriceExists_shouldReturn404() throws Exception {
         mockMvc.perform(get(URL)
-                        .param("applicationDate", "2019-01-01T00:00:00Z")
+                        .param("applicationDate", "2019-01-01T00:00:00+02:00")
                         .param("productId", String.valueOf(PRODUCT_ID))
                         .param("brandId", String.valueOf(BRAND_ID))
                         .accept(MediaType.APPLICATION_JSON))

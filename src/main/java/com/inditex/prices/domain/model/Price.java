@@ -1,7 +1,7 @@
 package com.inditex.prices.domain.model;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Value Object representing the applicable price for a product and brand at a given date.
@@ -13,8 +13,8 @@ public record Price(
         Long productId,
         Long brandId,
         Integer priceList,
-        LocalDateTime startDate,
-        LocalDateTime endDate,
+        Instant startDate,
+        Instant endDate,
         BigDecimal price,
         String currency
 ) {}

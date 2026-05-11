@@ -10,7 +10,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,9 +28,13 @@ class GetPriceUseCaseTest {
     @InjectMocks
     private GetPriceUseCase useCase;
 
-    private static final LocalDateTime DATE = LocalDateTime.of(2020, 6, 14, 10, 0);
+    private static final Instant DATE = OffsetDateTime.of(
+            2020, 6, 14, 10, 0, 0, 0, ZoneOffset.UTC
+    ).toInstant();
 
-    private static final LocalDateTime END_DATE = DATE.plusDays(1);
+    private static final Instant END_DATE = OffsetDateTime.of(
+            2020, 6, 15, 10, 0, 0, 0, ZoneOffset.UTC
+    ).toInstant();
 
     private static final Long PRODUCT_ID = 35455L;
     private static final Long BRAND_ID = 1L;
